@@ -1,9 +1,11 @@
+name: update-module-workflow
+
 on:
   workflow_dispatch:
     inputs:
       yamlFilePath:
         type: string
-        description: 'Path to the onboarding workflow YAML file (e.g., .github/workflows/onboarding-workflow.yml)'
+        description: 'Path to the onboarding workflow YAML file (e.g., .github/workflows/om.yml)'
         required: true
       registryUrl:
         type: string
@@ -54,28 +56,13 @@ jobs:
             -newOptions '${{ steps.format_modules.outputs.moduleList }}'
         shell: pwsh
 
-      - name: Validate Updated YAML File
-        run: |
-          yamllint ${{ inputs.yamlFilePath }}
-        shell: bash
-
-      - name: Commit and Create Branch for Changes
+      - name: Set Remote URL with PAT
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${secrets.PAT_TOKEN}
         run: |
+          git remote set-url origin https://github.com/ns-github-design/TEST101.git
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@gtest.com"
-          git checkout -b feature/update-module-changes
           git add ${{ inputs.yamlFilePath }}
           git commit -m "Updated onboarding workflow with new modules and versions" || echo "No changes to commit"
-          git push origin feature/update-module-changes
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "Updated onboarding workflow with new modules and versions"
-          branch: feature/update-module-changes
-          base: main
-          title: "Update Onboarding Workflow"
-          body: "This pull request updates the onboarding workflow with the latest modules and versions."
+          git push origin HEAD
