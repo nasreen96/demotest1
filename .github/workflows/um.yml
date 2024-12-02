@@ -313,6 +313,95 @@
 #           git push origin main
 
 
+# name: update-module-workflow
+
+# on:
+#   workflow_dispatch:
+#     inputs:
+#       yamlFilePath:
+#         type: string
+#         description: 'Path to the onboarding workflow YAML file (e.g., .github/workflows/om.yml)'
+#         required: true
+#       registryUrl:
+#         type: string
+#         description: 'URL of the MCR registry (default: https://mcr.microsoft.com/v2)'
+#         default: 'https://mcr.microsoft.com/v2'
+#         required: false
+#       moduleRepoPath:
+#         type: string
+#         description: 'Path to the module repository in the MCR registry (default: bicep/avm/res)'
+#         default: 'bicep/avm/res'
+#         required: false
+
+# permissions:
+#   id-token: write
+#   contents: write
+#   statuses: write
+#   actions: write
+
+# jobs:
+#   UpdateOnboardingWorkflow:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout the repository
+#         uses: actions/checkout@v4
+
+#       - name: Fetch Module List
+#         id: fetch_modules
+#         run: |
+#           pwsh ./utilities/tools/Get-ModuleListFromMcr.ps1 `
+#             -RegistryUrl '${{ inputs.registryUrl }}' `
+#             -ModuleRepoPath '${{ inputs.moduleRepoPath }}' `
+#             > raw-module-list.txt
+#         shell: pwsh
+
+#       - name: Format Module List
+#         id: format_modules
+#         run: |
+#           # Read the raw module list and format it into a PowerShell array
+#           moduleList=$(cat raw-module-list.txt | awk '{print "\""$0"\""}' | paste -sd "," -)
+#           echo "::set-output name=moduleList::@(${moduleList})"
+#         shell: bash
+
+#       - name: Update Onboarding Workflow
+#         run: |
+#           pwsh ./utilities/tools/Add-ModulesToOnboardingWorkflow.ps1 `
+#             -yamlFilePath '${{ inputs.yamlFilePath }}' `
+#             -newOptions '${{ steps.format_modules.outputs.moduleList }}'
+#         shell: pwsh
+
+#       - name: Configure Git
+#         run: |
+#           git config user.name "github-actions[bot]"
+#           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+#       - name: Generate App Token
+#         id: app-token
+#         uses: actions/create-github-app-token@v1
+#         with:
+#           app-id: ${{ vars.VERSION_BUMPER_APPID }}
+#           private-key: ${{ secrets.VERSION_BUMPER_SECRET }}
+
+#       - name: Create and Push Feature Branch
+#         run: |
+#           git checkout -b feature/update-onboarding
+#           git add ${{ inputs.yamlFilePath }}
+#           git commit -m "Updated onboarding workflow with new modules and options"
+#           git push origin feature/update-onboarding
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+#       - name: Create Pull Request
+#         uses: peter-evans/create-pull-request@v5
+#         with:
+#           token: ${{ secrets.GITHUB_TOKEN }}
+#           branch: feature/update-onboarding
+#           base: main
+#           title: "Update onboarding workflow"
+#           body: "This PR updates the onboarding workflow with the latest module options."
+
+
 name: update-module-workflow
 
 on:
@@ -344,15 +433,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check PowerShell Version
+        run: pwsh -Command "$PSVersionTable.PSVersion"
+
       - name: Checkout the repository
         uses: actions/checkout@v4
+
+      - name: Log Inputs
+        run: |
+          echo "RegistryUrl: '${{ inputs.registryUrl }}'"
+          echo "ModuleRepoPath: '${{ inputs.moduleRepoPath }}'"
 
       - name: Fetch Module List
         id: fetch_modules
         run: |
           pwsh ./utilities/tools/Get-ModuleListFromMcr.ps1 `
-            -RegistryUrl '${{ inputs.registryUrl }}' `
-            -ModuleRepoPath '${{ inputs.moduleRepoPath }}' `
+            -RegistryUrl "${{ inputs.registryUrl }}" `
+            -ModuleRepoPath "${{ inputs.moduleRepoPath }}" `
             > raw-module-list.txt
         shell: pwsh
 
@@ -389,8 +486,8 @@ jobs:
           git add ${{ inputs.yamlFilePath }}
           git commit -m "Updated onboarding workflow with new modules and options"
           git push origin feature/update-onboarding
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # env:
+        #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
