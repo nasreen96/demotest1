@@ -129,10 +129,6 @@ jobs:
     needs: Removal
     runs-on: ubuntu-latest
     steps:
-     - name: Checkout the feature branch
-       uses: actions/checkout@v4
-       with:
-            ref: ${{ github.head_ref }}
      - name: Echo branch name and verification message
        run: |
           echo "Checking out the feature branch: ${{ github.head_ref }}"
