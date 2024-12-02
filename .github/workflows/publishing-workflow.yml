@@ -135,7 +135,8 @@ jobs:
   #         echo "Branch checkout successful. Verification status set to pass."
 
   verify:
-    if: ${{ github.event_name == 'pull_request' && startsWith(github.head_ref, 'ci/') == true }}
+    if: always()
+    # if: ${{ github.event_name == 'pull_request' && startsWith(github.head_ref, 'ci/') == true }}
     needs: Removal
     runs-on: ubuntu-latest
     steps:
