@@ -1,4 +1,4 @@
-name: test
+name: testing the CI 
 
 on:
   workflow_dispatch:
@@ -9,3 +9,4 @@ jobs:
     steps:
       - name: my-step
         run: echo "Hello World!"
+        
