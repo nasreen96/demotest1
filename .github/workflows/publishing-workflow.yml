@@ -93,7 +93,7 @@ jobs:
       #     azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
   Removal:
-    if: ${{ inputs.remove_deployment == true }}
+    if: ${{ inputs.remove_deployment == true && startsWith(github.head_ref, 'ci/') == false }}
     needs:
       - deploy
       - publish
