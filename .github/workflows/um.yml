@@ -433,8 +433,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check PowerShell Version
-        run: pwsh -Command "$PSVersionTable.PSVersion"
+      # - name: Check PowerShell Version
+      #   run: pwsh -Command "$PSVersionTable.PSVersion"
 
       - name: Checkout the repository
         uses: actions/checkout@v4
