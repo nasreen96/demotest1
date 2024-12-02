@@ -56,13 +56,24 @@ jobs:
             -newOptions '${{ steps.format_modules.outputs.moduleList }}'
         shell: pwsh
 
-      - name: Set Remote URL with PAT
-        # env:
-        #   GITHUB_TOKEN: ${secrets.PAT_TOKEN}
+      - name: Configure Git
         run: |
-          git remote set-url origin https://github.com/nasreen96/demotest1.git
-          git config --global user.name "nasreen96"
-          git config --global user.email "nasreensarah@microsoft.com"
-          git add ${{ inputs.yamlFilePath }}
-          git commit -m "Updated onboarding workflow with new modules and versions" || echo "No changes to commit"
-          git push origin HEAD
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Push Changes
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/nasreen96/demotest1.git
+          git push origin main
+
+
+      # - name: Set Remote URL with PAT
+      #   # env:
+      #   #   GITHUB_TOKEN: ${secrets.PAT_TOKEN}
+      #   run: |
+      #     git remote set-url origin https://github.com/nasreen96/demotest1.git
+      #     git config --global user.name "nasreen96"
+      #     git config --global user.email "nasreensarah@microsoft.com"
+      #     git add ${{ inputs.yamlFilePath }}
+      #     git commit -m "Updated onboarding workflow with new modules and versions" || echo "No changes to commit"
+      #     git push origin HEAD
