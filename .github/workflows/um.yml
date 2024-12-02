@@ -57,12 +57,12 @@ jobs:
         shell: pwsh
 
       - name: Set Remote URL with PAT
-        env:
-          GITHUB_TOKEN: ${secrets.PAT_TOKEN}
+        # env:
+        #   GITHUB_TOKEN: ${secrets.PAT_TOKEN}
         run: |
           git remote set-url origin https://github.com/nasreen96/demotest1.git
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@gtest.com"
+          git config --global user.name "nasreen96"
+          git config --global user.email "nasreensarah@microsoft.com"
           git add ${{ inputs.yamlFilePath }}
           git commit -m "Updated onboarding workflow with new modules and versions" || echo "No changes to commit"
           git push origin HEAD
