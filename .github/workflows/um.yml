@@ -1,3 +1,84 @@
+# name: update-module-workflow
+
+# on:
+#   workflow_dispatch:
+#     inputs:
+#       yamlFilePath:
+#         type: string
+#         description: 'Path to the onboarding workflow YAML file (e.g., .github/workflows/om.yml)'
+#         required: true
+#       registryUrl:
+#         type: string
+#         description: 'URL of the MCR registry (default: https://mcr.microsoft.com/v2)'
+#         default: 'https://mcr.microsoft.com/v2'
+#         required: false
+#       moduleRepoPath:
+#         type: string
+#         description: 'Path to the module repository in the MCR registry (default: bicep/avm/res)'
+#         default: 'bicep/avm/res'
+#         required: false
+
+# permissions:
+#   id-token: write
+#   contents: read
+#   statuses: write
+#   actions: write
+
+# jobs:
+#   UpdateOnboardingWorkflow:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout the repository
+#         uses: actions/checkout@v4
+
+#       - name: Fetch Module List
+#         id: fetch_modules
+#         run: |
+#           pwsh ./utilities/tools/Get-ModuleListFromMcr.ps1 `
+#             -RegistryUrl '${{ inputs.registryUrl }}' `
+#             -ModuleRepoPath '${{ inputs.moduleRepoPath }}' `
+#             > raw-module-list.txt
+#         shell: pwsh
+
+#       - name: Format Module List
+#         id: format_modules
+#         run: |
+#           # Read the raw module list and format it into a PowerShell array
+#           moduleList=$(cat raw-module-list.txt | awk '{print "\""$0"\""}' | paste -sd "," -)
+#           echo "::set-output name=moduleList::@(${moduleList})"
+#         shell: bash
+
+#       - name: Update Onboarding Workflow
+#         run: |
+#           pwsh ./utilities/tools/Add-ModulesToOnboardingWorkflow.ps1 `
+#             -yamlFilePath '${{ inputs.yamlFilePath }}' `
+#             -newOptions '${{ steps.format_modules.outputs.moduleList }}'
+#         shell: pwsh
+
+#       - name: Configure Git
+#         run: |
+#           git config user.name "github-actions[bot]"
+#           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+#       - name: Push Changes
+#         run: |
+#           git remote set-url origin https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/nasreen96/demotest1.git
+#           git push origin main
+
+
+#       # - name: Set Remote URL with PAT
+#       #   # env:
+#       #   #   GITHUB_TOKEN: ${secrets.PAT_TOKEN}
+#       #   run: |
+#       #     git remote set-url origin https://github.com/nasreen96/demotest1.git
+#       #     git config --global user.name "nasreen96"
+#       #     git config --global user.email "nasreensarah@microsoft.com"
+#       #     git add ${{ inputs.yamlFilePath }}
+#       #     git commit -m "Updated onboarding workflow with new modules and versions" || echo "No changes to commit"
+#       #     git push origin HEAD
+
+
 name: update-module-workflow
 
 on:
@@ -20,7 +101,7 @@ on:
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
   statuses: write
   actions: write
 
@@ -61,19 +142,14 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+      - name: Generate App Token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.VERSION_BUMPER_APPID }}
+          private-key: ${{ secrets.VERSION_BUMPER_SECRET }}
+
       - name: Push Changes
         run: |
-          git remote set-url origin https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/nasreen96/demotest1.git
+          git remote set-url origin https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/nasreen96/demotest1.git
           git push origin main
-
-
-      # - name: Set Remote URL with PAT
-      #   # env:
-      #   #   GITHUB_TOKEN: ${secrets.PAT_TOKEN}
-      #   run: |
-      #     git remote set-url origin https://github.com/nasreen96/demotest1.git
-      #     git config --global user.name "nasreen96"
-      #     git config --global user.email "nasreensarah@microsoft.com"
-      #     git add ${{ inputs.yamlFilePath }}
-      #     git commit -m "Updated onboarding workflow with new modules and versions" || echo "No changes to commit"
-      #     git push origin HEAD
