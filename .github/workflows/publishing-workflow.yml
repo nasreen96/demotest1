@@ -93,8 +93,9 @@ jobs:
       #     azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
   Removal:
-    # if: ${{ inputs.remove_deployment == true && startsWith(github.head_ref, 'ci/') == false }}
-    if: ${{ github.event_name == 'pull_request' && startsWith(github.head_ref, 'ci/') == false || inputs.remove_deployment == true  }}
+    if: ${{ inputs.remove_deployment == true && startsWith(github.head_ref, 'ci/') == false }}
+    # if: ${{ github.event_name == 'pull_request' && startsWith(github.head_ref, 'ci/') == false || inputs.remove_deployment == true }}
+    # if: ${{ github.event_name == 'pull_request' && (inputs.remove_deployment == true || startsWith(github.head_ref, 'ci/') == false) }}
     needs:
       - deploy
       - publish
@@ -123,3 +124,29 @@ jobs:
       #     azure_client_id: ${{ secrets.AZURE_CLIENT_ID }}
       #     azure_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
       #     azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      
+  # verify:
+  #   if: ${{ github.event_name == 'pull_request' && !startsWith(github.head_ref, 'ci/') || inputs.remove_deployment == true }}
+  #   needs: Removal
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Echo branch name and verification message
+  #       run: |
+  #         echo "Checking out the feature branch: ${{ github.head_ref }}"
+  #         echo "Branch checkout successful. Verification status set to pass."
+
+  verify:
+    # if: always()
+    if: ${{ github.event_name == 'pull_request' && startsWith(github.head_ref, 'ci/') == true }}
+    # if: ${{ github.event_name == 'pull_request' && (startsWith(github.head_ref, 'ci/') || inputs.remove_deployment == true) }}
+    # if: ${{ github.event_name == 'pull_request' && (startsWith(github.head_ref, 'ci/') == false || inputs.remove_deployment == true) }}
+    # if: ${{ github.event_name == 'pull_request' && (inputs.remove_deployment == true || startsWith(github.head_ref, 'ci/') == false) }}
+    needs: Removal
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo branch name and verification message
+        run: |
+          echo "Verification step triggered for branch: ${{ github.head_ref }}"
+            
+
+
