@@ -93,9 +93,9 @@ jobs:
       #     azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
   Removal:
-    # if: ${{ inputs.remove_deployment == true && startsWith(github.head_ref, 'ci/') == false }}
+    if: ${{ inputs.remove_deployment == true && startsWith(github.head_ref, 'ci/') == false }}
     # if: ${{ github.event_name == 'pull_request' && startsWith(github.head_ref, 'ci/') == false || inputs.remove_deployment == true }}
-    if: ${{ github.event_name == 'pull_request' && (inputs.remove_deployment == true || startsWith(github.head_ref, 'ci/') == false) }}
+    # if: ${{ github.event_name == 'pull_request' && (inputs.remove_deployment == true || startsWith(github.head_ref, 'ci/') == false) }}
     needs:
       - deploy
       - publish
@@ -137,10 +137,10 @@ jobs:
 
   verify:
     # if: always()
-    # if: ${{ github.event_name == 'pull_request' && startsWith(github.head_ref, 'ci/') == true }}
+    if: ${{ github.event_name == 'pull_request' && startsWith(github.head_ref, 'ci/') == true }}
     # if: ${{ github.event_name == 'pull_request' && (startsWith(github.head_ref, 'ci/') || inputs.remove_deployment == true) }}
     # if: ${{ github.event_name == 'pull_request' && (startsWith(github.head_ref, 'ci/') == false || inputs.remove_deployment == true) }}
-    if: ${{ github.event_name == 'pull_request' && (inputs.remove_deployment == true || startsWith(github.head_ref, 'ci/') == false) }}
+    # if: ${{ github.event_name == 'pull_request' && (inputs.remove_deployment == true || startsWith(github.head_ref, 'ci/') == false) }}
     needs: Removal
     runs-on: ubuntu-latest
     steps:
