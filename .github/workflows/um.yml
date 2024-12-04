@@ -498,14 +498,115 @@
 #           title: "Update onboarding workflow"
 #           body: "This PR updates the onboarding workflow with the latest module options."
 
-name: update-module-workflow
+# name: update-module-workflow
+
+# on:
+#   workflow_dispatch:
+#     inputs:
+#       yamlFilePath:
+#         type: string
+#         description: 'Path to the onboarding workflow YAML file (e.g., .github/workflows/om.yml)'
+#         required: true
+#       registryUrl:
+#         type: string
+#         description: 'URL of the MCR registry (default: https://mcr.microsoft.com/v2)'
+#         default: 'https://mcr.microsoft.com/v2'
+#         required: false
+#       moduleRepoPath:
+#         type: string
+#         description: 'Path to the module repository in the MCR registry (default: bicep/avm/res)'
+#         default: 'bicep/avm/res'
+#         required: false
+
+# permissions:
+#   id-token: write
+#   contents: write
+#   statuses: write
+#   actions: write
+
+# jobs:
+#   UpdateOnboardingWorkflow:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       # Step 1: Checkout the repository
+#       - name: Checkout the repository
+#         uses: actions/checkout@v4
+
+#       # Step 2: Create and switch to a feature branch
+#       - name: Create and switch to a feature branch
+#         run: |
+#           git checkout -b feature/update-onboarding
+#           echo "Switched to branch: feature/update-onboarding"
+
+#       # Step 3: Fetch Module List
+#       - name: Fetch Module List
+#         id: fetch_modules
+#         run: |
+#           pwsh ./utilities/tools/Get-ModuleListFromMcr.ps1 `
+#             -RegistryUrl '${{ inputs.registryUrl }}' `
+#             -ModuleRepoPath '${{ inputs.moduleRepoPath }}' `
+#             > raw-module-list.txt
+#         shell: pwsh
+
+#       # Step 4: Format Module List
+#       - name: Format Module List
+#         id: format_modules
+#         run: |
+#           moduleList=$(cat raw-module-list.txt | awk '{print "\""$0"\""}' | paste -sd "," -)
+#           echo "::set-output name=moduleList::@(${moduleList})"
+#         shell: bash
+
+#       # Step 5: Update Onboarding Workflow (om.yml)
+#       - name: Update Onboarding Workflow
+#         run: |
+#           pwsh ./utilities/tools/Add-ModulesToOnboardingWorkflow.ps1 `
+#             -yamlFilePath '${{ inputs.yamlFilePath }}' `
+#             -newOptions '${{ steps.format_modules.outputs.moduleList }}'
+#         shell: pwsh
+
+#       # Step 6: Configure Git
+#       - name: Configure Git
+#         run: |
+#           git config user.name "github-actions[bot]"
+#           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+#       # Step 7: Generate App Token
+#       - name: Generate App Token
+#         id: app-token
+#         uses: actions/create-github-app-token@v1
+#         with:
+#           app-id: ${{ vars.VERSION_BUMPER_APPID }}
+#           private-key: ${{ secrets.VERSION_BUMPER_SECRET }}
+
+#       # Step 8: Commit and Push Changes to Feature Branch
+#       - name: Commit and Push Changes
+#         run: |
+#           git add ${{ inputs.yamlFilePath }}
+#           git commit -m "Updated onboarding workflow with new module options"
+#           git push https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/nasreen96/demotest1.git feature/update-onboarding
+
+#       # Step 9: Create Pull Request
+#       - name: Create Pull Request
+#         uses: peter-evans/create-pull-request@v5
+#         with:
+#           token: ${{ secrets.GITHUB_TOKEN }}
+#           branch: feature/update-onboarding
+#           base: main
+#           title: "Update Onboarding Workflow"
+#           body: "This PR updates the onboarding workflow with the latest module options."
+
+name: update-module-options-workflow
 
 on:
+  push:
+    branches: ci/module-list
+
   workflow_dispatch:
     inputs:
       yamlFilePath:
         type: string
-        description: 'Path to the onboarding workflow YAML file (e.g., .github/workflows/om.yml)'
+        description: 'Path to the onboarding workflow YAML file (e.g., .github/workflows/onboarding-workflow.yml)'
         required: true
       registryUrl:
         type: string
@@ -518,6 +619,9 @@ on:
         default: 'bicep/avm/res'
         required: false
 
+  schedule:
+    - cron: "0 0 * * *" # Runs daily at midnight UTC
+
 permissions:
   id-token: write
   contents: write
@@ -527,25 +631,24 @@ permissions:
 jobs:
   UpdateOnboardingWorkflow:
     runs-on: ubuntu-latest
-
     steps:
-      # Step 1: Checkout the repository
+      # Step 1: Check out the repository
       - name: Checkout the repository
         uses: actions/checkout@v4
 
-      # Step 2: Create and switch to a feature branch
+      # Step 2: Create and checkout a new feature branch
       - name: Create and switch to a feature branch
         run: |
-          git checkout -b feature/update-onboarding
-          echo "Switched to branch: feature/update-onboarding"
+          git checkout -b ci/update-onboarding
+          echo "Switched to branch: ci/update-onboarding"
 
       # Step 3: Fetch Module List
       - name: Fetch Module List
         id: fetch_modules
         run: |
           pwsh ./utilities/tools/Get-ModuleListFromMcr.ps1 `
-            -RegistryUrl '${{ inputs.registryUrl }}' `
-            -ModuleRepoPath '${{ inputs.moduleRepoPath }}' `
+            -RegistryUrl 'https://mcr.microsoft.com/v2' `
+            -ModuleRepoPath 'bicep/avm/res' `
             > raw-module-list.txt
         shell: pwsh
 
@@ -557,42 +660,53 @@ jobs:
           echo "::set-output name=moduleList::@(${moduleList})"
         shell: bash
 
-      # Step 5: Update Onboarding Workflow (om.yml)
+      # Step 5: Update Onboarding Workflow
       - name: Update Onboarding Workflow
         run: |
           pwsh ./utilities/tools/Add-ModulesToOnboardingWorkflow.ps1 `
-            -yamlFilePath '${{ inputs.yamlFilePath }}' `
+            -yamlFilePath '.github/workflows/onboarding-workflow.yml' `
             -newOptions '${{ steps.format_modules.outputs.moduleList }}'
         shell: pwsh
 
       # Step 6: Configure Git
       - name: Configure Git
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
 
       # Step 7: Generate App Token
       - name: Generate App Token
-        id: app-token
         uses: actions/create-github-app-token@v1
+        id: app-token
         with:
-          app-id: ${{ vars.VERSION_BUMPER_APPID }}
+          app-id: ${{  vars.VERSION_BUMPER_APPID  }}
           private-key: ${{ secrets.VERSION_BUMPER_SECRET }}
 
-      # Step 8: Commit and Push Changes to Feature Branch
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Checkout Feature Branch
+        run: |
+            git fetch origin
+            git checkout ci/update-onboarding
+
+      # Step 7: Commit and Push Changes to Feature Branch
       - name: Commit and Push Changes
         run: |
-          git add ${{ inputs.yamlFilePath }}
-          git commit -m "Updated onboarding workflow with new module options"
-          git push https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/nasreen96/demotest1.git feature/update-onboarding
+          git branch
+          git status
+          git add .
+          git commit -m "Updated onboarding workflow with new module options" || echo "No changes to commit"
+          git push --set-upstream origin ci/update-onboarding
 
-      # Step 9: Create Pull Request
+      # Step 8: Create Pull Request
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: feature/update-onboarding
+          branch: ci/update-onboarding
           base: main
           title: "Update Onboarding Workflow"
           body: "This PR updates the onboarding workflow with the latest module options."
-
