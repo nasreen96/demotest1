@@ -32,7 +32,7 @@ $catalogUrl = "$($RegistryUrl)/_catalog"
 $moduleListOutput = [System.Collections.ArrayList]::new()
 
 # Write a verbose message indicating the URL being queried
-Write-Verbose "starting the process to fetch modules and versions from [$($catalogUrl)]" -Verbose
+# Write-Verbose "starting the process to fetch modules and versions from [$($catalogUrl)]" -Verbose
 
 try {
     # Fetch the raw content of the catalog from the registry
