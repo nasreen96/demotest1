@@ -22,7 +22,7 @@
 #>
 param (
     [Parameter(Mandatory = $false)]
-    [string] $yamlFilePath = '.github\workflows\onboarding-workflow.yml',
+    [string] $yamlFilePath = '.\testing\onboarding-workflow.yml',
     [Parameter(Mandatory = $true)]
     [array] $newOptions
 )
