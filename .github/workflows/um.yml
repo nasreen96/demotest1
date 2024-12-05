@@ -209,9 +209,8 @@ jobs:
       - name: Create feature branch
         shell: pwsh
         run: |
-          branchName="update-module-options-${{ github.run_id }}"
-          git checkout -b "$branchName" origin/main
-          echo "::set-output name=branchName::$branchName"
+          git fetch origin
+          git checkout -b ci/update-onboarding origin/main || git checkout ci/update-onboarding
 
       # Step 8: Push changes to feature branch
       - name: Push changes to feature branch
@@ -221,14 +220,14 @@ jobs:
           git config --global user.email "github-actions@gtest.com"
           git add .
           git commit -m "Update onboarding workflow module options"
-          git push origin "${{ steps.create_branch.outputs.branchName }}"
+          git push origin ci/update-onboarding
 
-      # Step 9: Create pull request
-      - name: Create pull request
-        uses: peter-evans/create-pull-request@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ steps.create_branch.outputs.branchName }}
-          base: main
-          title: "Update onboarding workflow module options"
+      # # Step 9: Create pull request
+      # - name: Create pull request
+      #   uses: peter-evans/create-pull-request@v4
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     branch: ${{ steps.create_branch.outputs.branchName }}
+      #     base: main
+      #     title: "Update onboarding workflow module options"
           body: "This PR updates the onboarding workflow with the latest module options fetched from the MCR registry."
