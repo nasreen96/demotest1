@@ -70,9 +70,11 @@ try {
 
         }
         # Return the list of module versions
+        $moduleListOutput = $moduleListOutput | ConvertTo-Json
         return $moduleListOutput
     }
 } catch {
     # Write a warning message if the web request fails
-    Write-Warning ('Unable to fetch the modulets: {0}' -f $_.Exception.Message)
+    Write-Error ('Unable to fetch the modulets: {0}' -f $_.Exception.Message)
 }
+
