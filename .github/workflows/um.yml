@@ -133,7 +133,7 @@ on:
     inputs:
       yamlFilePath:
         type: string
-        description: "Path to the onboarding workflow YAML file (e.g., testing/onboarding-workflow.yml)"
+        description: "Path to the onboarding workflow YAML file (e.g., ./testing/onboarding-workflow.yml)"
         required: true
         default: "testing/onboarding-workflow.yml"
 
