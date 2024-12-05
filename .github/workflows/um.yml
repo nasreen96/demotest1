@@ -182,13 +182,14 @@ jobs:
             > raw-module-list.txt
         shell: pwsh
 
-      # Step 4: Format module list
       - name: Format module list
         id: format_modules
         run: |
+          sed -i 's/\x1b\[[0-9;]*[a-zA-Z]//g' raw-module-list.txt
           moduleList=$(cat raw-module-list.txt | jq -R -s 'split("\n") | map(select(length > 0))')
-          echo "::set-output name=moduleList::${moduleList}"
+          echo "MODULE_LIST=${moduleList}" >> $GITHUB_ENV
         shell: bash
+
 
       # Step 5: Update onboarding workflow
       - name: Update onboarding workflow
