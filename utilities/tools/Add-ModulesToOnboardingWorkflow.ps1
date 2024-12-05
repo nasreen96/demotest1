@@ -20,6 +20,7 @@
     Additional notes or information
 
 #>
+$VerbosePreference = "SilentlyContinue"
 param (
     [Parameter(Mandatory = $false)]
     [string] $yamlFilePath = '.\testing\onboarding-workflow.yml',
