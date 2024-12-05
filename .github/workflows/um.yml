@@ -177,8 +177,8 @@ jobs:
       - name: Fetch module list from MCR
         id: fetch_modules
         run: |
-          $module-list = pwsh ./utilities/tools/Get-ModuleListFromMcr.ps1 -RegistryUrl '${{ steps.define_inputs.outputs.registryUrl }}' -ModuleRepoPath '${{ steps.define_inputs.outputs.moduleRepoPath }}'
-          $update-workflow = pwsh ./utilities/tools/Add-ModulesToOnboardingWorkflow.ps1 -yamlFilePath '${{ steps.define_inputs.outputs.yamlFilePath }}' -newOptions $module-list
+          $modulelist = pwsh ./utilities/tools/Get-ModuleListFromMcr.ps1 -RegistryUrl '${{ steps.define_inputs.outputs.registryUrl }}' -ModuleRepoPath '${{ steps.define_inputs.outputs.moduleRepoPath }}'
+          $updateworkflow = pwsh ./utilities/tools/Add-ModulesToOnboardingWorkflow.ps1 -yamlFilePath '${{ steps.define_inputs.outputs.yamlFilePath }}' -newOptions $modulelist
         shell: pwsh
 
       # - name: Format module list
