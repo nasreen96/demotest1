@@ -194,12 +194,9 @@ jobs:
           # Convert the cleaned output into a JSON array
           moduleList=$(cat cleaned-module-list.txt | jq -R -s 'split("\n") | map(select(length > 0))')
       
-          # Save the formatted module list as an environment variable
-          echo "MODULE_LIST=${moduleList}" >> $GITHUB_ENV
+          # Set the formatted module list as an output
+          echo "::set-output name=moduleList::$moduleList"
         shell: bash
-
-
-
 
       # Step 5: Update onboarding workflow
       - name: Update onboarding workflow
