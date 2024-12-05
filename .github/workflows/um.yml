@@ -172,28 +172,29 @@ jobs:
           echo "::set-output name=registryUrl::$registryUrl"
           echo "::set-output name=moduleRepoPath::$moduleRepoPath"
           
+      # Step 3: Fetch module list from MCR and format
       - name: Fetch module list from MCR and format
         id: fetch_modules
         run: |
-          # Fetch the module list
-          moduleList=$(pwsh ./utilities/tools/Get-ModuleListFromMcr.ps1 `
-            -RegistryUrl '${{ steps.define_inputs.outputs.registryUrl }}' `
-            -ModuleRepoPath '${{ steps.define_inputs.outputs.moduleRepoPath }}')
+          $moduleList = ./utilities/tools/Get-ModuleListFromMcr.ps1 `
+            -RegistryUrl 'https://mcr.microsoft.com/v2' `
+            -ModuleRepoPath 'bicep/avm/res'
           
           # Format the list to YAML-compatible entries
-          formattedModuleList=$(echo "$moduleList" | sed 's/^/- /')
+          $formattedModuleList = $moduleList | ForEach-Object { "- $_" }
           
-          # Write the formatted list to an intermediate file
-          echo "$formattedModuleList" > formatted-module-list.txt
+          # Write the formatted list to a file
+          $formattedModuleList | Set-Content -Path formatted-module-list.txt
           
           # Pass the formatted list as an output
-          echo "::set-output name=moduleList::$formattedModuleList"
-        shell: bash
+          echo "::set-output name=modulelist::$($formattedModuleList -join "`n")"
+        shell: pwsh
+
 
       - name: Update onboarding workflow
         run: |
           pwsh ./utilities/tools/Add-ModulesToOnboardingWorkflow.ps1 `
-            -yamlFilePath '${{ steps.define_inputs.outputs.yamlFilePath }}' `
+            -yamlFilePath './testing/onboarding-workflow.yml' `
             -newOptions "$(cat formatted-module-list.txt)"
         shell: pwsh
 
@@ -209,14 +210,14 @@ jobs:
       #     $updateworkflow = pwsh ./utilities/tools/Add-ModulesToOnboardingWorkflow.ps1 -yamlFilePath '${{ steps.define_inputs.outputs.yamlFilePath }}' -newOptions "$modulelist"
       #   shell: pwsh
 
-      # Step 3: Fetch module list from MCR and update onboarding workflow
-      - name: Fetch module list and update onboarding workflow
-        id: fetch_and_update_workflow
-        run: |
-          $modulelist = pwsh ./utilities/tools/Get-ModuleListFromMcr.ps1 -RegistryUrl '${{ steps.define_inputs.outputs.registryUrl }}' -ModuleRepoPath '${{ steps.define_inputs.outputs.moduleRepoPath }}'
-          $formattedModuleList = $modulelist | ForEach-Object { "- $_`n" } -join ""
-          pwsh ./utilities/tools/Add-ModulesToOnboardingWorkflow.ps1 -yamlFilePath '${{ steps.define_inputs.outputs.yamlFilePath }}' -newOptions "$formattedModuleList"
-        shell: pwsh
+      # # Step 3: Fetch module list from MCR and update onboarding workflow
+      # - name: Fetch module list and update onboarding workflow
+      #   id: fetch_and_update_workflow
+      #   run: |
+      #     $modulelist = pwsh ./utilities/tools/Get-ModuleListFromMcr.ps1 -RegistryUrl '${{ steps.define_inputs.outputs.registryUrl }}' -ModuleRepoPath '${{ steps.define_inputs.outputs.moduleRepoPath }}'
+      #     $formattedModuleList = $modulelist | ForEach-Object { "- $_`n" } -join ""
+      #     pwsh ./utilities/tools/Add-ModulesToOnboardingWorkflow.ps1 -yamlFilePath '${{ steps.define_inputs.outputs.yamlFilePath }}' -newOptions "$formattedModuleList"
+      #   shell: pwsh
 
 
       # - name: Format module list
