@@ -182,21 +182,38 @@ jobs:
             > raw-module-list.txt
         shell: pwsh
 
-      - name: Format module list
+      # - name: Format module list
+      #   id: format_modules
+      #   run: |
+      #     # Remove VERBOSE log lines
+      #     grep -v '^VERBOSE' raw-module-list.txt > cleaned-module-list.txt
+      
+      #     # Remove ANSI escape codes
+      #     sed -i 's/\x1b\[[0-9;]*[a-zA-Z]//g' cleaned-module-list.txt
+      
+      #     # Convert the cleaned output into a JSON array
+      #     moduleList=$(cat cleaned-module-list.txt | jq -R -s 'split("\n") | map(select(length > 0))')
+      
+      #     # Set the formatted module list as an output
+      #     echo "::set-output name=moduleList::$moduleList"
+      #   shell: bash
+
+      - name: Format module list for YAML
         id: format_modules
         run: |
-          # Remove VERBOSE log lines
-          grep -v '^VERBOSE' raw-module-list.txt > cleaned-module-list.txt
-      
-          # Remove ANSI escape codes
-          sed -i 's/\x1b\[[0-9;]*[a-zA-Z]//g' cleaned-module-list.txt
-      
-          # Convert the cleaned output into a JSON array
-          moduleList=$(cat cleaned-module-list.txt | jq -R -s 'split("\n") | map(select(length > 0))')
-      
-          # Set the formatted module list as an output
-          echo "::set-output name=moduleList::$moduleList"
+                # Remove VERBOSE log lines
+                grep -v '^VERBOSE' raw-module-list.txt > cleaned-module-list.txt
+            
+                # Remove ANSI escape codes
+                sed -i 's/\x1b\[[0-9;]*[a-zA-Z]//g' cleaned-module-list.txt
+            
+                # Convert the cleaned output to YAML-compatible format
+                moduleList=$(cat cleaned-module-list.txt | jq -R -s 'split("\n") | map(select(length > 0)) | map("  - " + .) | join("\n")')
+            
+                # Set the output for further steps
+                echo "::set-output name=moduleList::$moduleList"
         shell: bash
+
 
       # Step 5: Update onboarding workflow
       - name: Update onboarding workflow
