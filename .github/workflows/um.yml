@@ -292,7 +292,7 @@ jobs:
         shell: pwsh
         run: |
           git fetch origin
-          git checkout -b ci/update-onboarding-test3 origin/main || git checkout ci/update-onboarding-test3
+          git checkout -b ci/update-onboarding-test4 origin/main || git checkout ci/update-onboarding-test4
 
       # Step 8: Push changes to feature branch
       - name: Push changes to feature branch
@@ -302,7 +302,7 @@ jobs:
           git config --global user.email "github-actions@gtest.com"
           git add .
           git commit -m "Update onboarding workflow module options"
-          git push origin ci/update-onboarding-test3
+          git push origin ci/update-onboarding-test4
 
       # # Step 9: Create pull request
       # - name: Create pull request
