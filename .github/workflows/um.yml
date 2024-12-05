@@ -80,25 +80,46 @@ jobs:
         with:
           app-id: ${{  vars.VERSION_BUMPER_APPID  }}
           private-key: ${{ secrets.VERSION_BUMPER_SECRET }}
-      
-      # Step 6: Commit and Push Changes
+
       - name: Commit and Push Changes
+        env:
+           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add .
           git commit -m "Update onboarding workflow with new module options" || echo "No changes to commit"
-          git push origin main
-        env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          git push origin ci/update-onboarding
 
-      # # Step 7: Create Pull Request
-      # - name: Create Pull Request
-      #   uses: peter-evans/create-pull-request@v4
-      #   with:
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     branch: ci/module-list
-      #     base: main
-      #     title: "Update Onboarding Workflow Module Options"
-      #     body: |
-      #       This PR updates the onboarding workflow with the latest module options fetched from the MCR registry.
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ci/update-onboarding
+          base: main
+          title: "Update Onboarding Workflow Module Options"
+          body: |
+            This PR updates the onboarding workflow with the latest module options fetched from the MCR registry.
+
+      
+      # # Step 6: Commit and Push Changes
+      # - name: Commit and Push Changes
+      #   run: |
+      #     git config user.name "github-actions"
+      #     git config user.email "github-actions@github.com"
+      #     git add .
+      #     git commit -m "Update onboarding workflow with new module options" || echo "No changes to commit"
+      #     git push origin main
+      #   env:
+      #     GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      # # # Step 7: Create Pull Request
+      # # - name: Create Pull Request
+      # #   uses: peter-evans/create-pull-request@v4
+      # #   with:
+      # #     token: ${{ secrets.GITHUB_TOKEN }}
+      # #     branch: ci/module-list
+      # #     base: main
+      # #     title: "Update Onboarding Workflow Module Options"
+      # #     body: |
+      # #       This PR updates the onboarding workflow with the latest module options fetched from the MCR registry.
