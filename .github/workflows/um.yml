@@ -171,6 +171,34 @@ jobs:
           echo "::set-output name=yamlFilePath::$yamlFilePath"
           echo "::set-output name=registryUrl::$registryUrl"
           echo "::set-output name=moduleRepoPath::$moduleRepoPath"
+          
+      - name: Fetch module list from MCR and format
+        id: fetch_modules
+        run: |
+          # Fetch the module list
+          moduleList=$(pwsh ./utilities/tools/Get-ModuleListFromMcr.ps1 `
+            -RegistryUrl '${{ steps.define_inputs.outputs.registryUrl }}' `
+            -ModuleRepoPath '${{ steps.define_inputs.outputs.moduleRepoPath }}')
+          
+          # Format the list to YAML-compatible entries
+          formattedModuleList=$(echo "$moduleList" | sed 's/^/- /')
+          
+          # Write the formatted list to an intermediate file
+          echo "$formattedModuleList" > formatted-module-list.txt
+          
+          # Pass the formatted list as an output
+          echo "::set-output name=moduleList::$formattedModuleList"
+        shell: bash
+
+      - name: Update onboarding workflow
+        run: |
+          pwsh ./utilities/tools/Add-ModulesToOnboardingWorkflow.ps1 `
+            -yamlFilePath '${{ steps.define_inputs.outputs.yamlFilePath }}' `
+            -newOptions "$(cat formatted-module-list.txt)"
+        shell: pwsh
+
+
+
 
       
       # # Step 3: Fetch module list from MCR
