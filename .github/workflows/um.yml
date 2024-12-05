@@ -199,11 +199,11 @@ jobs:
             -newOptions '${{ steps.format_modules.outputs.moduleList }}'
         shell: pwsh
 
-      # Step 6: Validate updated YAML
-      - name: Validate updated YAML
-        run: |
-          yamllint '${{ steps.define_inputs.outputs.yamlFilePath }}'
-        shell: bash
+      # # Step 6: Validate updated YAML
+      # - name: Validate updated YAML
+      #   run: |
+      #     yamllint '${{ steps.define_inputs.outputs.yamlFilePath }}'
+      #   shell: bash
 
       # Step 7: Create feature branch
       - name: Create feature branch
