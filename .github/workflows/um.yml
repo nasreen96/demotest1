@@ -70,7 +70,14 @@ jobs:
       #   run: |
       #     yamllint '${{ inputs.yamlFilePath }}'
       #   shell: bash
-
+       # Step 7: Generate App Token
+      - name: Generate App Token
+        uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{  vars.VERSION_BUMPER_APPID  }}
+          private-key: ${{ secrets.VERSION_BUMPER_SECRET }}
+      
       # Step 6: Commit and Push Changes
       - name: Commit and Push Changes
         run: |
@@ -80,7 +87,7 @@ jobs:
           git commit -m "Update onboarding workflow with new module options" || echo "No changes to commit"
           git push origin main
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
 
       # # Step 7: Create Pull Request
       # - name: Create Pull Request
