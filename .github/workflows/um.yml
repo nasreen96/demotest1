@@ -173,22 +173,41 @@ jobs:
           echo "::set-output name=moduleRepoPath::$moduleRepoPath"
           
       # Step 3: Fetch module list from MCR and format
-      - name: Fetch module list from MCR and format
+      # - name: Fetch module list from MCR and format
+      #   id: fetch_modules
+      #   run: |
+      #     $moduleList = ./utilities/tools/Get-ModuleListFromMcr.ps1 `
+      #       -RegistryUrl 'https://mcr.microsoft.com/v2' `
+      #       -ModuleRepoPath 'bicep/avm/res'
+          
+      #     # Format the list to YAML-compatible entries
+      #     $formattedModuleList = $moduleList | ForEach-Object { "- $_" }
+          
+      #     # Write the formatted list to a file
+      #     $formattedModuleList | Set-Content -Path formatted-module-list.txt
+          
+      #     # Pass the formatted list as an output
+      #     echo "::set-output name=modulelist::$($formattedModuleList -join "`n")"
+      #   shell: pwsh
+
+      - name: Fetch and format module list from MCR
         id: fetch_modules
         run: |
-          $moduleList = ./utilities/tools/Get-ModuleListFromMcr.ps1 `
-            -RegistryUrl 'https://mcr.microsoft.com/v2' `
-            -ModuleRepoPath 'bicep/avm/res'
-          
-          # Format the list to YAML-compatible entries
-          $formattedModuleList = $moduleList | ForEach-Object { "- $_" }
-          
-          # Write the formatted list to a file
-          $formattedModuleList | Set-Content -Path formatted-module-list.txt
-          
-          # Pass the formatted list as an output
-          echo "::set-output name=modulelist::$($formattedModuleList -join "`n")"
-        shell: pwsh
+          # Fetch the module list from the PowerShell script
+          moduleList=$(pwsh ./utilities/tools/Get-ModuleListFromMcr.ps1 `
+            -RegistryUrl '${{ steps.define_inputs.outputs.registryUrl }}' `
+            -ModuleRepoPath '${{ steps.define_inputs.outputs.moduleRepoPath }}')
+      
+          # Format the module list for YAML (each item on a new line with a leading '- ')
+          formattedModuleList=$(echo "$moduleList" | sed 's/^/- /')
+      
+          # Write the formatted module list to a file for validation and use
+          echo "$formattedModuleList" > formatted-module-list.txt
+      
+          # Set the formatted module list as an output for further steps
+          echo "::set-output name=formattedModuleList::$formattedModuleList"
+        shell: bash
+
 
 
       - name: Update onboarding workflow
