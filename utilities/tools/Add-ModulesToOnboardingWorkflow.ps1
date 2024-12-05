@@ -20,10 +20,9 @@
     Additional notes or information
 
 #>
-# $VerbosePreference = "SilentlyContinue"
 param (
     [Parameter(Mandatory = $false)]
-    [string] $yamlFilePath = '.\testing\onboarding-workflow.yml',
+    [string] $yamlFilePath = '.github\workflows\onboarding-workflow.yml',
     [Parameter(Mandatory = $true)]
     [array] $newOptions
 )
@@ -50,9 +49,10 @@ if (-not $newOptions) {
 # Load the YAML content
 $yamlContent = Get-Content -Raw -Path "$yamlFilePath" | ConvertFrom-Yaml
 
-if ($yamlContent -and $yamlContent.on.workflow_dispatch.inputs.module_path.options) {
+if ($yamlContent -and $yamlContent.on.workflow_dispatch.inputs.module.options) {
+
     # Append Module list to existing options without duplicates
-    $yamlContent.on.workflow_dispatch.inputs.module_path.options = $yamlContent.on.workflow_dispatch.inputs.module_path.options + $newOptions | Select-Object -Unique
+    $yamlContent.on.workflow_dispatch.inputs.module.options = $yamlContent.on.workflow_dispatch.inputs.module.options + $newOptions | Select-Object -Unique
     # Convert the content back to YAML and save
     $yamlContent | ConvertTo-Yaml | Set-Content -Path $yamlFilePath
 
@@ -61,3 +61,4 @@ if ($yamlContent -and $yamlContent.on.workflow_dispatch.inputs.module_path.optio
     Write-Error "Invalid YAML structure or missing 'options' key."
     exit 1
 }
+
