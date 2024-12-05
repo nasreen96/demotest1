@@ -185,14 +185,19 @@ jobs:
       - name: Format module list
         id: format_modules
         run: |
-          # Remove ANSI escape codes and VERBOSE log lines
-          sed -i '/^VERBOSE/d' raw-module-list.txt
-          sed -i 's/\x1b\[[0-9;]*[a-zA-Z]//g' raw-module-list.txt
+          # Remove VERBOSE log lines
+          grep -v '^VERBOSE' raw-module-list.txt > cleaned-module-list.txt
+      
+          # Remove ANSI escape codes
+          sed -i 's/\x1b\[[0-9;]*[a-zA-Z]//g' cleaned-module-list.txt
       
           # Convert the cleaned output into a JSON array
-          moduleList=$(cat raw-module-list.txt | jq -R -s 'split("\n") | map(select(length > 0))')
+          moduleList=$(cat cleaned-module-list.txt | jq -R -s 'split("\n") | map(select(length > 0))')
+      
+          # Save the formatted module list as an environment variable
           echo "MODULE_LIST=${moduleList}" >> $GITHUB_ENV
         shell: bash
+
 
 
 
