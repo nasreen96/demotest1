@@ -230,4 +230,4 @@ jobs:
       #     branch: ${{ steps.create_branch.outputs.branchName }}
       #     base: main
       #     title: "Update onboarding workflow module options"
-          body: "This PR updates the onboarding workflow with the latest module options fetched from the MCR registry."
+          # body: "This PR updates the onboarding workflow with the latest module options fetched from the MCR registry."
