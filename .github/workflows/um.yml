@@ -195,8 +195,8 @@ jobs:
         run: |
           # Fetch the module list from the PowerShell script
           moduleList=$(pwsh ./utilities/tools/Get-ModuleListFromMcr.ps1 `
-            -RegistryUrl '${{ steps.define_inputs.outputs.registryUrl }}' `
-            -ModuleRepoPath '${{ steps.define_inputs.outputs.moduleRepoPath }}')
+            -RegistryUrl 'https://mcr.microsoft.com/v2' `
+            -ModuleRepoPath 'bicep/avm/res')
       
           # Format the module list for YAML (each item on a new line with a leading '- ')
           formattedModuleList=$(echo "$moduleList" | sed 's/^/- /')
