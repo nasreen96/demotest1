@@ -74,7 +74,7 @@ jobs:
         shell: pwsh
         run: |
           # Fetch module list from the script
-          $ListOutput = ./utilities/tools/Get-ModuleListFromMcr.ps1
+          $ListOutput = ./utilities/tools/Get-ModuleList.ps1
           Write-Host "Raw module list from script:"
           Write-Host "$($ListOutput)"
 
