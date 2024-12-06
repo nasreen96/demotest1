@@ -73,7 +73,6 @@ jobs:
         id: fetch_modules
         run: |
           $ListOutput = ./utilities/tools/Get-ModuleList.ps1
-          # Convert plain text to valid JSON array (PowerShell way)
           $jsonListOutput = $ListOutput -replace "`r`n", '","'
           $jsonListOutput = '["' + $jsonListOutput + '"]'
           echo "::set-output name=moduleList::$jsonListOutput"
@@ -84,7 +83,7 @@ jobs:
         run: |
           echo "Generating YAML options..."
           echo "options:" > formatted-options.txt
-          echo "${{ steps.fetch_modules.outputs.moduleList }}" | jq -r '.[] | "  - \(.))"' >> formatted-options.txt
+          echo '${{ steps.fetch_modules.outputs.moduleList }}' | jq -r '.[] | "  - \(.))"' >> formatted-options.txt
           cat formatted-options.txt
         shell: bash
 
@@ -92,6 +91,7 @@ jobs:
         run: |
           cat formatted-options.txt >> ${{ steps.define_inputs.outputs.yamlFilePath }}
         shell: bash
+
 
 
       - name: Push changes to feature branch
