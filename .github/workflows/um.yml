@@ -78,8 +78,8 @@ jobs:
           Write-Host "Raw module list from script:"
           Write-Host "$($ListOutput)"
       
-          # Remove unwanted characters and format the module list
-          $FormattedList = $ListOutput -replace '[",\']', '' | ForEach-Object {
+          # Format the module list to remove brackets and clean up
+          $FormattedList = $ListOutput -replace '^\[|\]$', '' | ForEach-Object {
               $_.Trim() # Remove leading/trailing spaces
           } | Where-Object { 
               $_ -ne '' # Remove empty strings
@@ -91,6 +91,7 @@ jobs:
       
           # Pass the cleaned list to the update script
           ./utilities/tools/Update-ModuleList01.ps1 -yamlFilePath '.github/workflows/onboarding-workflow.yml' -newOptions $FormattedList
+
 
 
 
