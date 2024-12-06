@@ -83,24 +83,18 @@ jobs:
         run: |
           echo "Generating YAML options..."
 
-          # Step 1: Save raw JSON input for debugging
+          # Step 1: Save raw JSON options from previous step
           echo '${{ steps.fetch_modules.outputs.moduleList }}' > raw-options.json
           echo "Raw JSON Options:"
           cat raw-options.json
 
-          # Step 2: Trim and validate JSON
-          # Remove leading/trailing whitespaces and ensure it starts with '[' and ends with ']'
-          sed -i 's/^[[:space:]]*//;s/[[:space:]]*$//' raw-options.json
-          sed -i 's/]$/]/' raw-options.json
-          sed -i 's/^\[/[/' raw-options.json
-
-          # Validate the cleaned JSON
-          if ! jq empty raw-options.json; then
-            echo "Invalid JSON format after cleanup. Exiting."
+          # Step 2: Validate JSON content using jq
+          if ! jq . raw-options.json; then
+            echo "Invalid JSON format in raw-options.json. Exiting."
             exit 1
           fi
 
-          # Step 3: Convert JSON array to YAML format
+          # Step 3: Convert JSON array to YAML options
           echo "options:" > formatted-options.yaml
           jq -r '.[] | "- \(.))"' raw-options.json >> formatted-options.yaml
 
@@ -108,10 +102,6 @@ jobs:
           echo "Formatted YAML Options:"
           cat formatted-options.yaml
         shell: bash
-
-
-
-
 
 
       - name: Update YAML file
