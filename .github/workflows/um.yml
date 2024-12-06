@@ -73,9 +73,10 @@ jobs:
         id: fetch_modules
         run: |
           $ListOutput = ./utilities/tools/Get-ModuleList.ps1
-          write-host "Starting workflow update with below array"
-          write-host "$($ListOutput)"
-          echo "::set-output name=moduleList::$($ListOutput)"
+          # Convert plain text to valid JSON array (PowerShell way)
+          $jsonListOutput = $ListOutput -replace "`r`n", '","'
+          $jsonListOutput = '["' + $jsonListOutput + '"]'
+          echo "::set-output name=moduleList::$jsonListOutput"
         shell: pwsh
 
       - name: Convert module list to YAML format
@@ -91,6 +92,7 @@ jobs:
         run: |
           cat formatted-options.txt >> ${{ steps.define_inputs.outputs.yamlFilePath }}
         shell: bash
+
 
       - name: Push changes to feature branch
         env:
