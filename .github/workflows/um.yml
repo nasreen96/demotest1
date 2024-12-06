@@ -89,12 +89,12 @@ jobs:
           git commit -m "Update onboarding workflow module options"
           git push origin ci/update-onboarding-workflow-01
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
-        with:
-              token: ${{ secrets.GITHUB_TOKEN }}
-              branch: ci/update-onboarding-workflow
-              base: main
-              title: "Update Onboarding Workflow"
-              body: "This PR updates the onboarding workflow with the latest module options."
+      # - name: Create Pull Request
+      #   uses: peter-evans/create-pull-request@v7
+      #   with:
+      #         token: ${{ secrets.GITHUB_TOKEN }}
+      #         branch: ci/update-onboarding-workflow
+      #         base: main
+      #         title: "Update Onboarding Workflow"
+      #         body: "This PR updates the onboarding workflow with the latest module options."
 
