@@ -49,7 +49,7 @@ $yamlContent = Get-Content -Raw -Path "$yamlFilePath" | ConvertFrom-Yaml
 if ($yamlContent -and $yamlContent.on.workflow_dispatch.inputs.module_path.options) {
     # Append new options and remove duplicates
     $cleanedOptions = $newOptions | ForEach-Object {
-        $_.Trim() -replace '[\"\',]', '' # Clean unwanted characters
+        $_.Trim() -replace '["''\[\]]', '' # Remove unwanted characters
     } | Select-Object -Unique
 
     $yamlContent.on.workflow_dispatch.inputs.module_path.options = $cleanedOptions
