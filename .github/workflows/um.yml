@@ -69,45 +69,6 @@ jobs:
           git checkout ci/update-onboarding-workflow-01
           git branch
 
-      # - name: Fetch module list from MCR
-      #   id: fetch_modules
-      #   run: |
-      #     $ListOutput = ./utilities/tools/Get-ModuleList.ps1
-      #     $jsonListOutput = $ListOutput -replace "`r`n", '","'
-      #     $jsonListOutput = '["' + $jsonListOutput.TrimEnd(',') + '"]'
-      #     echo "::set-output name=moduleList::$jsonListOutput"
-      #   shell: pwsh
-
-      # - name: Convert module list to YAML format
-      #   id: convert_yaml
-      #   run: |
-      #     echo "Generating YAML options..."
-          
-      #     # Save raw JSON input
-      #     echo '${{ steps.fetch_modules.outputs.moduleList }}' > raw-options.json
-      #     echo "Raw JSON Options:"
-      #     cat raw-options.json
-
-      #     # Validate JSON
-      #     if ! jq empty raw-options.json; then
-      #       echo "Invalid JSON format. Exiting."
-      #       exit 1
-      #     fi
-
-      #     # Convert JSON array to YAML
-      #     echo "options:" > formatted-options.yaml
-      #     jq -r '.[] | "- \(.)"' raw-options.json >> formatted-options.yaml
-
-      #     # Debugging output
-      #     echo "Formatted YAML Options:"
-      #     cat formatted-options.yaml
-      #   shell: bash
-
-      # - name: Update YAML file
-      #   run: |
-      #     cat formatted-options.yaml >> ${{ steps.define_inputs.outputs.yamlFilePath }}
-      #   shell: bash
-
       - name: Fetch module list from MCR
         id: fetch_modules
         run: |
@@ -117,22 +78,39 @@ jobs:
             > raw-module-list.txt
         shell: pwsh
 
-      # Step 4: Format module list
+      - name: Debug raw module list
+        run: |
+          echo "Raw module list content:"
+          cat raw-module-list.txt
+          if ! jq . raw-module-list.txt > /dev/null 2>&1; then
+            echo "Invalid JSON format in raw-module-list.txt"
+            exit 1
+          fi
+        shell: bash
+
       - name: Format module list
         id: format_modules
         run: |
+          echo "Formatting module list into YAML..."
           moduleList=$(cat raw-module-list.txt | jq -R -s 'split("\n") | map(select(length > 0)) | map("- \(.)") | join("\n")')
-          echo "::set-output name=moduleList::${moduleList}"
+          if [[ -z "$moduleList" ]]; then
+            echo "Error: Formatted module list is empty. Exiting."
+            exit 1
+          fi
+          echo "Formatted YAML options:"
+          echo "$moduleList"
+          echo "::set-output name=moduleList::$moduleList"
         shell: bash
 
-      # Step 5: Update onboarding workflow
       - name: Update onboarding workflow
-        id: update_workflow
         run: |
-          pwsh ./utilities/tools/Update-ModuleList01.ps1 `
-            -yamlFilePath '${{ steps.define_inputs.outputs.yamlFilePath }}' `
-            -newOptions '${{ steps.format_modules.outputs.moduleList }}'
-        shell: pwsh
+          echo "Updating YAML file at ${{ steps.define_inputs.outputs.yamlFilePath }}..."
+          {
+            echo "options:"
+            echo "${{ steps.format_modules.outputs.moduleList }}"
+          } >> "${{ steps.define_inputs.outputs.yamlFilePath }}"
+          echo "YAML file updated successfully."
+        shell: bash
 
       - name: Push changes to feature branch
         env:
