@@ -82,17 +82,23 @@ jobs:
         id: convert_yaml
         run: |
           echo "Generating YAML options..."
-          
-          # Start YAML block
+
+          # Step 1: Verify if input is valid JSON
+          echo '${{ steps.fetch_modules.outputs.moduleList }}' > raw-options.json
+          if ! jq empty raw-options.json; then
+            echo "Invalid JSON format. Exiting."
+            exit 1
+          fi
+
+          # Step 2: Generate YAML options block
           echo "options:" > formatted-options.yaml
-          
-          # Convert JSON array to vertical YAML entries
-          echo '${{ steps.fetch_modules.outputs.moduleList }}' | jq -r '.[] | "- \(.))"' >> formatted-options.yaml
-          
-          # Debugging output for verification
+          jq -r '.[] | "- \(.))"' raw-options.json >> formatted-options.yaml
+
+          # Step 3: Debugging output for verification
           echo "Formatted YAML Options:"
           cat formatted-options.yaml
         shell: bash
+
 
 
       - name: Update YAML file
