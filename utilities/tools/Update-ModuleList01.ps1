@@ -47,18 +47,24 @@ if (-not $newOptions) {
 }
 
 # Load the YAML content
+Write-Output "Provided new options: $newOptions"
 $yamlContent = Get-Content -Raw -Path "$yamlFilePath" | ConvertFrom-Yaml
 
-if ($yamlContent -and $yamlContent.on.workflow_dispatch.inputs.module.options) {
+# Check if the YAML content contains the required structure
+if ($yamlContent -and $yamlContent.on.workflow_dispatch.inputs.module_path.options) {
+    # Combine existing options with new options, ensuring uniqueness
+    $updatedOptions = $yamlContent.on.workflow_dispatch.inputs.module_path.options + $newOptions | Select-Object -Unique
 
-    # Append Module list to existing options without duplicates
-    $yamlContent.on.workflow_dispatch.inputs.module.options = $yamlContent.on.workflow_dispatch.inputs.module.options + $newOptions | Select-Object -Unique
+    # Properly format the options array for YAML
+    $yamlContent.on.workflow_dispatch.inputs.module_path.options = $updatedOptions
+
     # Convert the content back to YAML and save
-    $yamlContent | ConvertTo-Yaml | Set-Content -Path $yamlFilePath
+    $yamlContent | ConvertTo-Yaml -Depth 100 | Set-Content -Path $yamlFilePath
 
     Write-Host 'YAML file updated successfully!'
 } else {
     Write-Error "Invalid YAML structure or missing 'options' key."
     exit 1
 }
+
 
