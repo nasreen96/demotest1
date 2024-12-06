@@ -65,8 +65,8 @@ jobs:
         run: |
           git checkout main
           git pull origin main
-          git branch ci/update-onboarding-workflow-04 || Write-Output "Branch already exists locally or remotely."
-          git checkout ci/update-onboarding-workflow-04
+          git branch ci/update-onboarding-workflow-05 || Write-Output "Branch already exists locally or remotely."
+          git checkout ci/update-onboarding-workflow-05
           git branch
 
       - name: Fetch module list from MCR and Update Onboard Module Input options
@@ -78,8 +78,8 @@ jobs:
           Write-Host "Raw module list from script:"
           Write-Host "$($ListOutput)"
       
-          # Format the module list to remove brackets and clean up
-          $FormattedList = $ListOutput -replace '^\[|\]$', '' | ForEach-Object {
+          # Remove unwanted characters and format the module list
+          $FormattedList = $ListOutput -replace '[",\']', '' | ForEach-Object {
               $_.Trim() # Remove leading/trailing spaces
           } | Where-Object { 
               $_ -ne '' # Remove empty strings
@@ -93,6 +93,7 @@ jobs:
           ./utilities/tools/Update-ModuleList01.ps1 -yamlFilePath '.github/workflows/onboarding-workflow.yml' -newOptions $FormattedList
 
 
+
       - name: Push changes to feature branch
         env:
           token: ${{ steps.app-token.outputs.token }}
@@ -102,9 +103,9 @@ jobs:
           $YamlPath = '.github\workflows\onboarding-workflow.yml'
           $YamlContent = Get-Content -Raw -Path $YamlPath | ConvertFrom-Yaml
       
-          # Process the module_path options
+          # Process and clean the module_path options
           $CleanedOptions = $YamlContent.on.workflow_dispatch.inputs.module_path.options | ForEach-Object {
-              $_.Trim() # Remove leading/trailing spaces
+              $_ -replace '[",\']', '' | Trim() # Remove unwanted characters and trim spaces
           } | Where-Object {
               ($_ -ne '') -and (-not $_.StartsWith('|')) # Remove empty entries and unwanted lines
           }
@@ -124,7 +125,8 @@ jobs:
           git config --global user.email "github-actions@gtest.com"
           git add $YamlPath
           git commit -m "Cleaned and updated module_path options in onboarding workflow"
-          git push origin ci/update-onboarding-workflow-04
+          git push origin ci/update-onboarding-workflow-05
+
 
 
       # - name: Create Pull Request
