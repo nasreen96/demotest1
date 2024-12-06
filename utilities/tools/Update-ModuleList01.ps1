@@ -55,14 +55,13 @@ if ($yamlContent -and $yamlContent.on.workflow_dispatch.inputs.module_path.optio
     # Combine existing options with new options, ensuring uniqueness
     $updatedOptions = $yamlContent.on.workflow_dispatch.inputs.module_path.options + $newOptions | Select-Object -Unique
 
-    # Reformat the options so each entry is on a new line
+    # Ensure options are written as proper YAML list items
     $yamlContent.on.workflow_dispatch.inputs.module_path.options = $updatedOptions
 
-    # Convert the YAML back to a string and ensure proper indentation for the array
+    # Convert YAML content back to string while preserving structure
     $yamlString = $yamlContent | ConvertTo-Yaml
-    $yamlString = $yamlString -replace 'options: \[', "options:" # Start new line for 'options'
-    $yamlString = $yamlString -replace '\],', ""                # Remove ending array brackets
-    $yamlString = $yamlString -replace '\s*"(.*?)"', "- `$1"    # Format each option properly
+    $yamlString = $yamlString -replace "`r`n\s+- \[.*\]$", ""  # Remove any single-line array formatting
+    $yamlString = $yamlString -replace "options:.*", "options:" # Ensure options list starts on a new line
 
     # Save the reformatted YAML back to the file
     Set-Content -Path $yamlFilePath -Value $yamlString
