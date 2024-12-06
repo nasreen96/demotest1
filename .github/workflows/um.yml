@@ -129,7 +129,7 @@ jobs:
       - name: Update onboarding workflow
         id: update_workflow
         run: |
-          pwsh ./utilities/tools/Update-ModuleList.ps1 `
+          pwsh ./utilities/tools/Update-ModuleList01.ps1 `
             -yamlFilePath '${{ steps.define_inputs.outputs.yamlFilePath }}' `
             -newOptions '${{ steps.format_modules.outputs.moduleList }}'
         shell: pwsh
