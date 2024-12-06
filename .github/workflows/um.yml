@@ -65,31 +65,32 @@ jobs:
         run: |
           git checkout main
           git pull origin main
-          git branch ci/update-onboarding-workflow-05 || Write-Output "Branch already exists locally or remotely."
-          git checkout ci/update-onboarding-workflow-05
+          git branch ci/update-onboarding-workflow-06 || Write-Output "Branch already exists locally or remotely."
+          git checkout ci/update-onboarding-workflow-06
           git branch
 
       - name: Fetch module list from MCR and Update Onboard Module Input options
         id: fetch_modules
         shell: pwsh
         run: |
+          # Fetch module list from the script
           $ListOutput = ./utilities/tools/Get-ModuleListFromMcr.ps1
           Write-Host "Raw module list from script:"
           Write-Host "$($ListOutput)"
 
+          # Format the module list to remove brackets and clean up
           $FormattedList = $ListOutput | ForEach-Object {
-              $_.Trim() -replace '[\"\',]', '' # Remove unwanted characters
+              $_.Trim() -replace '[",\']', '' # Remove unwanted characters
           } | Where-Object { 
               $_ -ne '' # Remove empty strings
           }
 
+          # Log the cleaned module list
           Write-Host "Cleaned Module List:"
           $FormattedList | ForEach-Object { Write-Host "- $_" }
 
+          # Pass the cleaned list to the update script
           ./utilities/tools/Update-ModuleList01.ps1 -yamlFilePath "${{ github.event.inputs.yamlFilePath }}" -newOptions $FormattedList
-
-
-
 
 
       - name: Push changes to feature branch
@@ -123,7 +124,7 @@ jobs:
           git config --global user.email "github-actions@gtest.com"
           git add $YamlPath
           git commit -m "Cleaned and updated module_path options in onboarding workflow"
-          git push origin ci/update-onboarding-workflow-05
+          git push origin ci/update-onboarding-workflow-06
 
 
 
