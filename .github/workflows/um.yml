@@ -65,8 +65,8 @@ jobs:
         run: |
           git checkout main
           git pull origin main
-          git branch ci/update-onboarding-workflow-06 || Write-Output "Branch already exists locally or remotely."
-          git checkout ci/update-onboarding-workflow-06
+          git branch ci/update-onboarding-workflow-07 || Write-Output "Branch already exists locally or remotely."
+          git checkout ci/update-onboarding-workflow-07
           git branch
 
       - name: Fetch module list from MCR and Update Onboard Module Input options
@@ -122,9 +122,9 @@ jobs:
           # Configure Git and push changes to the feature branch
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@gtest.com"
-          git add $YamlPath
+          git add .
           git commit -m "Cleaned and updated module_path options in onboarding workflow"
-          git push origin ci/update-onboarding-workflow-06
+          git push origin ci/update-onboarding-workflow-07
 
 
 
