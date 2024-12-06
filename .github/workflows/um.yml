@@ -73,24 +73,21 @@ jobs:
         id: fetch_modules
         shell: pwsh
         run: |
-          # Fetch module list from the script
-          $ListOutput = ./utilities/tools/Get-ModuleList.ps1
+          $ListOutput = ./utilities/tools/Get-ModuleListFromMcr.ps1
           Write-Host "Raw module list from script:"
           Write-Host "$($ListOutput)"
-      
-          # Format the module list to remove brackets and clean up
-          $FormattedList = $ListOutput -replace '^\[|\]$', '' | ForEach-Object {
-              $_.Trim() # Remove leading/trailing spaces
+
+          $FormattedList = $ListOutput | ForEach-Object {
+              $_.Trim() -replace '[\"\',]', '' # Remove unwanted characters
           } | Where-Object { 
               $_ -ne '' # Remove empty strings
           }
-      
-          # Log the cleaned module list
+
           Write-Host "Cleaned Module List:"
           $FormattedList | ForEach-Object { Write-Host "- $_" }
-      
-          # Pass the cleaned list to the update script
-          ./utilities/tools/Update-ModuleList01.ps1 -yamlFilePath '.github/workflows/onboarding-workflow.yml' -newOptions $FormattedList
+
+          ./utilities/tools/Update-ModuleList01.ps1 -yamlFilePath "${{ github.event.inputs.yamlFilePath }}" -newOptions $FormattedList
+
 
 
 
