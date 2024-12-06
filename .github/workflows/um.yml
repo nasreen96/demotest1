@@ -93,8 +93,6 @@ jobs:
           ./utilities/tools/Update-ModuleList01.ps1 -yamlFilePath "${{ github.event.inputs.yamlFilePath }}" -newOptions $FormattedList
 
 
-
-
       - name: Push changes to feature branch
         env:
           token: ${{ steps.app-token.outputs.token }}
@@ -106,7 +104,7 @@ jobs:
       
           # Process and clean the module_path options
           $CleanedOptions = $YamlContent.on.workflow_dispatch.inputs.module_path.options | ForEach-Object {
-              $_ -replace '["''\[\]]', ''  | Trim() # Remove unwanted characters and trim spaces
+              $_.Trim() -replace '["''\[\]]', '' # Remove unwanted characters
           } | Where-Object {
               ($_ -ne '') -and (-not $_.StartsWith('|')) # Remove empty entries and unwanted lines
           }
