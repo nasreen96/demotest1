@@ -82,10 +82,18 @@ jobs:
         id: convert_yaml
         run: |
           echo "Generating YAML options..."
-          echo "options:" > formatted-options.txt
-          echo '${{ steps.fetch_modules.outputs.moduleList }}' | jq -r '.[] | "  - \(.))"' >> formatted-options.txt
-          cat formatted-options.txt
+          
+          # Start YAML block
+          echo "options:" > formatted-options.yaml
+          
+          # Convert JSON array to vertical YAML entries
+          echo '${{ steps.fetch_modules.outputs.moduleList }}' | jq -r '.[] | "- \(.))"' >> formatted-options.yaml
+          
+          # Debugging output for verification
+          echo "Formatted YAML Options:"
+          cat formatted-options.yaml
         shell: bash
+
 
       - name: Update YAML file
         run: |
