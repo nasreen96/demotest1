@@ -75,22 +75,23 @@ jobs:
         run: |
           # Fetch module list from the script
           $ListOutput = ./utilities/tools/Get-ModuleList.ps1
-          Write-Host "Starting workflow update with the following array:"
+          Write-Host "Raw module list from script:"
           Write-Host "$($ListOutput)"
-
-          # Clean and format the module list to match the desired YAML structure
-          $CleanedList = $ListOutput | ForEach-Object {
+      
+          # Format the module list to remove brackets and clean up
+          $FormattedList = $ListOutput -replace '^\[|\]$', '' | ForEach-Object {
               $_.Trim() # Remove leading/trailing spaces
           } | Where-Object { 
               $_ -ne '' # Remove empty strings
           }
-
-          # Log the cleaned list for debugging
+      
+          # Log the cleaned module list
           Write-Host "Cleaned Module List:"
-          $CleanedList | ForEach-Object { Write-Host "- $_" }
-
+          $FormattedList | ForEach-Object { Write-Host "- $_" }
+      
           # Pass the cleaned list to the update script
-          ./utilities/tools/Update-ModuleList01.ps1 -yamlFilePath "${{ steps.define_inputs.outputs.yamlFilePath }}" -newOptions $CleanedList
+          ./utilities/tools/Update-ModuleList01.ps1 -yamlFilePath '.github/workflows/onboarding-workflow.yml' -newOptions $FormattedList
+
 
       - name: Push changes to feature branch
         env:
