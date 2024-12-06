@@ -59,12 +59,10 @@ if ($yamlContent -and $yamlContent.on.workflow_dispatch.inputs.module_path.optio
     $yamlContent.on.workflow_dispatch.inputs.module_path.options = $updatedOptions
 
     # Convert the content back to YAML and save
-    $yamlContent | ConvertTo-Yaml -Depth 100 | Set-Content -Path $yamlFilePath
+    $yamlContent | ConvertTo-Yaml | Set-Content -Path $yamlFilePath
 
     Write-Host 'YAML file updated successfully!'
 } else {
     Write-Error "Invalid YAML structure or missing 'options' key."
     exit 1
 }
-
-
