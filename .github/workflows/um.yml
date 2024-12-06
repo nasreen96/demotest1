@@ -104,7 +104,7 @@ jobs:
       
           # Process and clean the module_path options
           $CleanedOptions = $YamlContent.on.workflow_dispatch.inputs.module_path.options | ForEach-Object {
-              $_ -replace '["''\[\]]', '' | Trim()
+              $_.Trim() -replace '["''\[\]]', '' # Remove unwanted characters
           } | Where-Object {
               ($_ -ne '') -and (-not $_.StartsWith('|')) # Remove empty entries and unwanted lines
           }
