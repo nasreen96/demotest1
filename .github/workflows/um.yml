@@ -80,7 +80,7 @@ jobs:
 
           # Format the module list to remove brackets and clean up
           $FormattedList = $ListOutput | ForEach-Object {
-              $_.Trim() -replace '[",\']', '' # Remove unwanted characters
+              $_.Trim() -replace "" , '' , [] # Remove unwanted characters
           } | Where-Object { 
               $_ -ne '' # Remove empty strings
           }
