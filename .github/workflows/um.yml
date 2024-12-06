@@ -69,14 +69,28 @@ jobs:
             git checkout ci/update-onboarding-workflow-01
             git branch
 
-      - name: Fetch module list from MCR and Update Onboard Module Input options
+      - name: Fetch module list from MCR
         id: fetch_modules
         run: |
           $ListOutput = ./utilities/tools/Get-ModuleList.ps1
           write-host "Starting workflow update with below array"
           write-host "$($ListOutput)"
-          $updateworkflow = ./utilities/tools/Update-ModuleList01.ps1 -yamlFilePath '.github\workflows\onboarding-workflow.yml' -newOptions "$ListOutput"
+          echo "::set-output name=moduleList::$($ListOutput)"
         shell: pwsh
+
+      - name: Convert module list to YAML format
+        id: convert_yaml
+        run: |
+          echo "Generating YAML options..."
+          echo "options:" > formatted-options.txt
+          echo "${{ steps.fetch_modules.outputs.moduleList }}" | jq -r '.[] | "  - \(.))"' >> formatted-options.txt
+          cat formatted-options.txt
+        shell: bash
+
+      - name: Update YAML file
+        run: |
+          cat formatted-options.txt >> ${{ steps.define_inputs.outputs.yamlFilePath }}
+        shell: bash
 
       - name: Push changes to feature branch
         env:
@@ -88,13 +102,4 @@ jobs:
           git add .
           git commit -m "Update onboarding workflow module options"
           git push origin ci/update-onboarding-workflow-01
-
-      # - name: Create Pull Request
-      #   uses: peter-evans/create-pull-request@v7
-      #   with:
-      #         token: ${{ secrets.GITHUB_TOKEN }}
-      #         branch: ci/update-onboarding-workflow
-      #         base: main
-      #         title: "Update Onboarding Workflow"
-      #         body: "This PR updates the onboarding workflow with the latest module options."
 
