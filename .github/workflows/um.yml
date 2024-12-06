@@ -65,23 +65,33 @@ jobs:
         run: |
             git checkout ci/module-list
             git pull origin ci/module-list
-            git branch ci/update-onboarding-workflow-03 || Write-Output "Branch already exists locally or remotely."
-            git checkout ci/update-onboarding-workflow-03
+            git branch ci/update-onboarding-workflow-04 || Write-Output "Branch already exists locally or remotely."
+            git checkout ci/update-onboarding-workflow-04
             git branch
 
       - name: Fetch module list from MCR and Update Onboard Module Input options
         id: fetch_modules
         shell: pwsh
         run: |
+          # Fetch module list from the script
           $ListOutput = ./utilities/tools/Get-ModuleList.ps1
           Write-Host "Starting workflow update with the following array:"
           Write-Host "$($ListOutput)"
-          
-          # Ensure the output is split into components if necessary
-          $splitList = $ListOutput -split ' '
-          Write-Host "Split Module List: $($splitList)"
-          
-          ./utilities/tools/Update-ModuleList01.ps1 -yamlFilePath "${{ steps.define_inputs.outputs.yamlFilePath }}" -newOptions $splitList
+      
+          # Clean and format the module list to match the desired YAML structure
+          $CleanedList = $ListOutput | ForEach-Object {
+              $_.Trim() # Remove leading/trailing spaces
+          } | Where-Object { 
+              $_ -ne '' # Remove empty strings
+          }
+      
+          # Log the cleaned list for debugging
+          Write-Host "Cleaned Module List:"
+          $CleanedList | ForEach-Object { Write-Host "- $_" }
+      
+          # Pass the cleaned list to the update script
+          ./utilities/tools/Update-ModuleList01.ps1 -yamlFilePath '.github\workflows\onboarding-workflow.yml' -newOptions $CleanedList
+
 
       - name: Push changes to feature branch
         env:
@@ -92,7 +102,7 @@ jobs:
           git config --global user.email "github-actions@gtest.com"
           git add .
           git commit -m "Update onboarding workflow module options"
-          git push origin ci/update-onboarding-workflow-03
+          git push origin ci/update-onboarding-workflow-04
 
       # - name: Create Pull Request
       #   uses: peter-evans/create-pull-request@v7
