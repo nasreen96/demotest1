@@ -63,8 +63,8 @@ jobs:
       - name: Create and checkout feature branch
         shell: pwsh
         run: |
-          git checkout ci/module-list
-          git pull origin ci/module-list
+          git checkout main
+          git pull origin main
           git branch ci/update-onboarding-workflow-04 || Write-Output "Branch already exists locally or remotely."
           git checkout ci/update-onboarding-workflow-04
           git branch
