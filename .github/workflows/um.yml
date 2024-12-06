@@ -88,21 +88,27 @@ jobs:
           echo "Raw JSON Options:"
           cat raw-options.json
 
-          # Step 2: Trim unwanted characters and validate JSON
+          # Step 2: Trim and validate JSON
+          # Remove leading/trailing whitespaces and ensure it starts with '[' and ends with ']'
+          sed -i 's/^[[:space:]]*//;s/[[:space:]]*$//' raw-options.json
           sed -i 's/]$/]/' raw-options.json
+          sed -i 's/^\[/[/' raw-options.json
+
+          # Validate the cleaned JSON
           if ! jq empty raw-options.json; then
             echo "Invalid JSON format after cleanup. Exiting."
             exit 1
           fi
 
-          # Step 3: Process JSON to generate vertical YAML options
+          # Step 3: Convert JSON array to YAML format
           echo "options:" > formatted-options.yaml
           jq -r '.[] | "- \(.))"' raw-options.json >> formatted-options.yaml
 
-          # Step 4: Display formatted YAML for debugging
+          # Step 4: Debugging output for verification
           echo "Formatted YAML Options:"
           cat formatted-options.yaml
         shell: bash
+
 
 
 
