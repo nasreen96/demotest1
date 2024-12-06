@@ -65,8 +65,8 @@ jobs:
         run: |
           git checkout ci/module-list
           git pull origin ci/module-list
-          git branch ci/update-onboarding-workflow-03 || Write-Output "Branch already exists locally or remotely."
-          git checkout ci/update-onboarding-workflow-03
+          git branch ci/update-onboarding-workflow-04 || Write-Output "Branch already exists locally or remotely."
+          git checkout ci/update-onboarding-workflow-04
           git branch
 
       - name: Fetch module list from MCR and Update Onboard Module Input options
@@ -100,30 +100,31 @@ jobs:
           # Load and clean the YAML content
           $YamlPath = '.github\workflows\onboarding-workflow.yml'
           $YamlContent = Get-Content -Raw -Path $YamlPath | ConvertFrom-Yaml
-
+      
           # Process the module_path options
           $CleanedOptions = $YamlContent.on.workflow_dispatch.inputs.module_path.options | ForEach-Object {
               $_.Trim() # Remove leading/trailing spaces
           } | Where-Object {
               ($_ -ne '') -and (-not $_.StartsWith('|')) # Remove empty entries and unwanted lines
           }
-
+      
           # Replace the options with cleaned values
           $YamlContent.on.workflow_dispatch.inputs.module_path.options = $CleanedOptions
-
+      
           # Convert back to YAML and save
-          $YamlContent | ConvertTo-Yaml -Depth 100 | Set-Content -Path $YamlPath
-
+          $YamlContent | ConvertTo-Yaml | Set-Content -Path $YamlPath
+      
           # Log the cleaned YAML for debugging
           Write-Host "Cleaned YAML Content:"
           Get-Content -Path $YamlPath
-
+      
           # Configure Git and push changes to the feature branch
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@gtest.com"
           git add $YamlPath
           git commit -m "Cleaned and updated module_path options in onboarding workflow"
-          git push origin ci/update-onboarding-workflow-03
+          git push origin ci/update-onboarding-workflow-04
+
 
       # - name: Create Pull Request
       #   uses: peter-evans/create-pull-request@v7
