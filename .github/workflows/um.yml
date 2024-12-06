@@ -83,21 +83,26 @@ jobs:
         run: |
           echo "Generating YAML options..."
 
-          # Step 1: Verify if input is valid JSON
+          # Step 1: Save JSON input to a file for debugging
           echo '${{ steps.fetch_modules.outputs.moduleList }}' > raw-options.json
+          echo "Raw JSON Options:"
+          cat raw-options.json
+
+          # Step 2: Verify if the JSON input is valid
           if ! jq empty raw-options.json; then
             echo "Invalid JSON format. Exiting."
             exit 1
           fi
 
-          # Step 2: Generate YAML options block
+          # Step 3: Process JSON and generate vertical YAML options
           echo "options:" > formatted-options.yaml
-          jq -r '.[] | "- \(.))"' raw-options.json >> formatted-options.yaml
+          jq -r '.[] | "- \(.)"' raw-options.json >> formatted-options.yaml
 
-          # Step 3: Debugging output for verification
+          # Step 4: Display formatted YAML for debugging
           echo "Formatted YAML Options:"
           cat formatted-options.yaml
         shell: bash
+
 
 
 
