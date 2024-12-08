@@ -13,6 +13,10 @@ on:
           - network/private-endpoint/0.9.0
           - key-vault/vault/0.10.2
           - container-service/managed-cluster/0.5.1
+          - db-for-postgre-sql/flexible-server/0.6.0
+          - container-registry/registry/0.6.0
+          - network/application-gateway/0.5.1
+          - network/application-gateway-web-application-firewall-policy/0.1.1
 
       repository:
         description: "Source Repo: Azure/bicep-registry-modules"
@@ -25,7 +29,7 @@ jobs:
 
     steps:
       - name: Set up Git
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -53,7 +57,7 @@ jobs:
           git checkout -b "${{ steps.define_inputs.outputs.branch_name }}" origin/main
 
       - name: Checkout external repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           repository: "${{ github.event.inputs.repository }}"
           path: ${{ steps.define_inputs.outputs.brmFolderPath }}
