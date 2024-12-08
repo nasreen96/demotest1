@@ -9,7 +9,7 @@ on:
     inputs:
       yamlFilePath:
         type: string
-        description: 'Path to the onboarding workflow YAML file (e.g., .github\actions\templates\testing\onboarding-workflow.yml)'
+        description: 'Path to the onboarding workflow YAML file (e.g., .github\workflows\onboarding-workflow.yml)'
         required: true
       registryUrl:
         type: string
@@ -40,7 +40,7 @@ jobs:
         uses: actions/create-github-app-token@v1
         id: app-token
         with:
-          app-id: ${{ vars.VERSION_BUMPER_APPID }}
+          app-id: ${{  vars.VERSION_BUMPER_APPID  }}
           private-key: ${{ secrets.VERSION_BUMPER_SECRET }}
 
       - name: Checkout repository
@@ -63,91 +63,67 @@ jobs:
       - name: Create and checkout feature branch
         shell: pwsh
         run: |
-          git checkout main
-          git pull origin main
-          git branch ci/update-onboarding-workflow-08 || Write-Output "Branch already exists locally or remotely."
-          git checkout ci/update-onboarding-workflow-08
-          git branch
+            git checkout ci/module-list
+            git pull origin ci/module-list
+            git branch ci/update-01 || Write-Output "Branch already exists locally or remotely."
+            git checkout ci/update-01
+            git branch
 
       - name: Fetch module list from MCR and Update Onboard Module Input options
         id: fetch_modules
         shell: pwsh
         run: |
-          # Fetch module list from the script
-          $ListOutput = ./utilities/tools/Get-ModuleList.ps1
-          Write-Host "Raw module list from script:"
-          Write-Host "$($ListOutput)"
+              # Fetch module list from the script
+              $ListOutput = ./utilities/tools/Get-ModuleList.ps1
+              Write-Host "Raw module list from script:"
+              Write-Host "$($ListOutput)"
 
-          # Format the module list to remove brackets and clean up
-          $FormattedList = $ListOutput | ForEach-Object {
-              $_.Trim() -replace '["''\[\]]', '' # Remove unwanted characters
-          } | Where-Object { 
-              $_ -ne '' # Remove empty strings
-          }
+              # Format the module list to remove brackets and clean up
+              $FormattedList = $ListOutput | ForEach-Object {
+                  $_.Trim() -replace '["''\[\]]', '' # Remove unwanted characters
+              } | Where-Object {
+                  $_ -ne '' # Remove empty strings
+              }
 
-          # Log the cleaned module list
-          Write-Host "Cleaned Module List:"
-          $FormattedList | ForEach-Object { Write-Host "- $_" }
+              # Log the cleaned module list
+              Write-Host "Cleaned Module List:"
+              $FormattedList | ForEach-Object { Write-Host "- $_" }
 
-          # Pass the cleaned list to the update script
-          ./utilities/tools/Update-ModuleList01.ps1 -yamlFilePath "${{ github.event.inputs.yamlFilePath }}" -newOptions $FormattedList
-
+              # Pass the cleaned list to the update script
+              ./utilities/tools/Update-ModuleList01.ps1 -yamlFilePath ".github\workflows\onboarding-workflow.yml" -newOptions $FormattedList
 
       - name: Push changes to feature branch
         env:
-          token: ${{ steps.app-token.outputs.token }}
+            token: ${{ steps.app-token.outputs.token }}
         shell: pwsh
         run: |
-          # Load and clean the YAML content
-          $YamlPath = '.github\workflows\onboarding-workflow.yml'
-          $YamlContent = Get-Content -Raw -Path $YamlPath | ConvertFrom-Yaml
-      
-          # Process and clean the module_path options
-          $CleanedOptions = $YamlContent.on.workflow_dispatch.inputs.module_path.options | ForEach-Object {
-              $_.Trim() -replace '["''\[\]]', '' # Remove unwanted characters
-          } | Where-Object {
-              ($_ -ne '') -and (-not $_.StartsWith('|')) # Remove empty entries and unwanted lines
-          }
-      
-          # Replace the options with cleaned values
-          $YamlContent.on.workflow_dispatch.inputs.module_path.options = $CleanedOptions
-      
-          # Convert back to YAML and save
-          $YamlContent | ConvertTo-Yaml | Set-Content -Path $YamlPath
-      
-          # Log the cleaned YAML for debugging
-          Write-Host "Cleaned YAML Content:"
-          Get-Content -Path $YamlPath
-      
-          # Configure Git and push changes to the feature branch
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@gtest.com"
-          git add .
-          git commit -m "Cleaned and updated module_path options in onboarding workflow"
-          git push origin ci/update-onboarding-workflow-08
+                # Load and clean the YAML content
+                $YamlPath = '.github\workflows\onboarding-workflow.yml'
+                $YamlContent = Get-Content -Raw -Path $YamlPath | ConvertFrom-Yaml
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ci/update-onboarding-workflow-08 # Ensure this matches your feature branch
-          base: main                              # Target branch for the PR
-          title: "Update Onboarding Workflow"     # Title of the PR
-          body: |
-            This PR updates the onboarding workflow with the latest module options.
-            - Includes cleaned module options in YAML.
-            - Automatically generated by GitHub Actions.
+                # Process and clean the module_path options
+                $CleanedOptions = $YamlContent.on.workflow_dispatch.inputs.module_path.options | ForEach-Object {
+                    $_.Trim() -replace '["''\[\]]', '' # Remove unwanted characters
+                } | Where-Object {
+                    ($_ -ne '') -and (-not $_.StartsWith('|')) # Remove empty entries and unwanted lines
+                }
+
+                # Replace the options with cleaned values
+                $YamlContent.on.workflow_dispatch.inputs.module_path.options = $CleanedOptions
+
+                # Convert back to YAML and save
+                $YamlContent | ConvertTo-Yaml | Set-Content -Path $YamlPath
+
+                # Log the cleaned YAML for debugging
+                Write-Host "Cleaned YAML Content:"
+                Get-Content -Path $YamlPath
+
+                # Configure Git and push changes to the feature branch
+                git config --global user.name "github-actions"
+                git config --global user.email "github-actions@gtest.com"
+                git add .
+                git commit -m "Cleaned and updated module_path options in onboarding workflow"
+                git push origin ci/update-01
 
 
 
-
-
-
-      # - name: Create Pull Request
-      #   uses: peter-evans/create-pull-request@v7
-      #   with:
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     branch: ci/update-onboarding-workflow-03
-      #     base: main
-      #     title: "Update Onboarding Workflow"
-      #     body: "This PR updates the onboarding workflow with the latest module options."
